@@ -1,0 +1,56 @@
+{
+  "name": "abi-mobile-demo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build --webpack",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "tsx --test tests/*.test.ts",
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "preview:cloudflare": "opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare deploy",
+    "cf:typegen": "wrangler types",
+    "test:e2e": "playwright test",
+    "test:smoke": "tsx scripts/smoke.ts"
+  },
+  "dependencies": {
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zustand": "5.0.16",
+    "zod": "4.6.7",
+    "lucide-react": "1.62.0",
+    "gsap": "3.15.0",
+    "three": "0.186.1",
+    "@react-three/fiber": "9.8.2",
+    "@react-three/drei": "10.7.9",
+    "@fontsource-variable/vazirmatn": "5.3.0"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.13",
+    "wrangler": "4.154.0",
+    "rclone.js": "0.6.6",
+    "typescript": "6.0.3",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.186.0",
+    "tailwindcss": "4.3.3",
+    "@tailwindcss/postcss": "4.3.3",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.3",
+    "tsx": "4.23.15",
+    "@playwright/test": "1.64.1"
+  },
+  "overrides": {
+    "rclone.js": {
+      "adm-zip": "0.6.1"
+    },
+    "@node-minify/core": {
+      "glob": "10.5.0"
+    }
+  }
+}

@@ -79,4 +79,3 @@ Copy `.env.example` to `.env.local` for local Next development, or `.dev.vars.ex
 ## Production is a separate phase
 
 See [PRODUCTION.md](docs/PRODUCTION.md). This demo is intentionally portable: replace repository/store boundaries with server-backed data and orders. Suitable hosting must support a Next-compatible server runtime, secrets, database connectivity, media storage and operations. Static/shared PHP hosting alone cannot run that system.
-

@@ -1,0 +1,39 @@
+name: Verify demo
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build:cloudflare
+      - run: npx playwright install --with-deps chromium
+      - name: Exercise Workers runtime
+        run: |
+          npx wrangler dev --local --port 8787 > /tmp/abi-worker.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8787/ > /dev/null; then break; fi
+            sleep 2
+          done
+          npm run test:smoke
+          TEST_BASE_URL=http://127.0.0.1:8787 npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-verification
+          path: |
+            test-results/
+            playwright-report/
