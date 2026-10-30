@@ -4,7 +4,8 @@ import { Heart, ArrowUpLeft } from "lucide-react";
 import { productHref } from "@/lib/repository";
 import type { Product } from "@/lib/types";
 import { useStore } from "@/lib/store";
-import { priceOf, number, inStock } from "@/lib/domain";
+import { priceOf, inStock } from "@/lib/domain";
+import { BluePrice } from "./blue-price";
 export function ProductCard({ product: p }: { product: Product }) {
   const ready = useStore((s) => s.ready);
   const wish = useStore((s) => s.wishlist.includes(p.id));
@@ -13,7 +14,7 @@ export function ProductCard({ product: p }: { product: Product }) {
     <article className="product-card">
       <div className="product-visual">
         {p.offer ? (
-          <span className="product-tag">انتخاب ویژه</span>
+          <span className="product-tag">قیمت آبی</span>
         ) : (
           <span className="brand-label">{p.brand}</span>
         )}
@@ -57,8 +58,13 @@ export function ProductCard({ product: p }: { product: Product }) {
           <div>
             {inStock(p) ? (
               <>
-                <strong>{number(priceOf(p))}</strong>
-                <small>تومان</small>
+                <BluePrice
+                  compact
+                  variant={
+                    p.variants.find((v) => v.price === priceOf(p)) ||
+                    p.variants[0]
+                  }
+                />
               </>
             ) : (
               <span className="muted">فعلاً ناموجود</span>

@@ -7,6 +7,9 @@ import { resolveCart, totals, money, normalize, digits } from "@/lib/domain";
 import { contactSchema } from "@/lib/validation";
 import { Breadcrumb, DemoNote, Empty, Quantity } from "./ui";
 import type { Order } from "@/lib/types";
+import { PointsHint } from "./club";
+import { orderBluePoints } from "@/lib/club";
+import { number } from "@/lib/domain";
 export function Cart({ checkout = false }: { checkout?: boolean }) {
   const catalog = useCatalog();
   const cart = useStore((s) => s.cart);
@@ -60,6 +63,10 @@ export function Cart({ checkout = false }: { checkout?: boolean }) {
           <div className="row between">
             <span>مبلغ نمایشی</span>
             <strong>{money(order.total)}</strong>
+          </div>
+          <div className="order-earned-points">
+            ✦ {number(orderBluePoints(order))} امتیاز آبی ثبت شد{" "}
+            <Link href="/account/club">دیدن باشگاه ↗</Link>
           </div>
           {order.lines.map((l) => (
             <div key={l.variantId} className="row between">
@@ -315,7 +322,7 @@ export function Cart({ checkout = false }: { checkout?: boolean }) {
           </div>
           {applied && (
             <div className="row between discount">
-              <span>تخفیف نمایشی</span>
+              <span>کاهش با قیمت آبی</span>
               <strong>− {money(amount.discount)}</strong>
             </div>
           )}
@@ -327,7 +334,7 @@ export function Cart({ checkout = false }: { checkout?: boolean }) {
           </div>
           <div className="coupon">
             <label htmlFor="discount">
-              <Tag size={15} /> کد تخفیف
+              <Tag size={15} /> کد قیمت آبی
             </label>
             <div>
               <input
@@ -353,12 +360,13 @@ export function Cart({ checkout = false }: { checkout?: boolean }) {
                 {codeError}
               </span>
             )}
-            {applied && <span className="discount">تخفیف اعمال شد</span>}
+            {applied && <span className="discount">قیمت آبی اعمال شد</span>}
           </div>
           <div className="summary-total row between">
             <span>مبلغ نهایی</span>
             <strong>{money(amount.total)}</strong>
           </div>
+          <PointsHint amount={amount.subtotal - amount.discount} />
           {checkout ? (
             <button
               className="btn primary"

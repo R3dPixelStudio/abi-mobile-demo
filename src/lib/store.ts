@@ -17,6 +17,7 @@ import {
 import type { Product, Article, Order, StoreSettings } from "./types";
 import { mergeProducts, mergeArticles } from "./repository";
 import { resolveCart, totals } from "./domain";
+import { bluePointsFor } from "./club";
 const persistedSchema = z.object({
   cart: cartSchema,
   coupon: z.string().max(20).default(""),
@@ -201,11 +202,13 @@ export const useStore = create<Store>()(
           set({ notice: "اطلاعات و موجودی سبد را دوباره بررسی کنید" });
           return null;
         }
+        const amount = totals(cart.subtotal, percent);
         const order: Order = {
           id: `ABI-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
           date: new Date().toISOString(),
           lines: cart.lines,
-          ...totals(cart.subtotal, percent),
+          ...amount,
+          bluePoints: bluePointsFor(amount.subtotal - amount.discount),
           status: "ثبت آزمایشی",
           contact: contact.data,
         };

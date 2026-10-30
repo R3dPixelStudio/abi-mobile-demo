@@ -12,18 +12,22 @@ import {
   ArrowUpLeft,
   Smartphone,
   GitCompareArrows,
+  ChevronDown,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { number } from "@/lib/domain";
 import { Modal } from "./ui";
+import { AccessoryMenu, MobileAccessoryMenu } from "./accessory-menu";
 const links = [
   ["/products?kind=phone", "گوشی موبایل"],
   ["/products?kind=accessory", "لوازم جانبی"],
-  ["/products?offer=1", "پیشنهادهای ویژه"],
+  ["/products?offer=1", "قیمت آبی"],
   ["/blog", "مجله آبی"],
+  ["/club", "باشگاه آبی"],
 ];
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [openBrands, setOpenBrands] = useState(false);
   const cart = useStore((s) => s.cart);
   const settings = useStore((s) => s.settings);
   const path = usePathname();
@@ -89,15 +93,77 @@ export function Header() {
         </div>
         <nav className="container nav-row" aria-label="منوی اصلی">
           <div>
-            {links.map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
-                className={path === "/blog" && href === "/blog" ? "active" : ""}
-              >
-                {label}
-              </Link>
-            ))}
+            {links.map(([href, label], index) =>
+              index === 0 ? (
+                <div
+                  className="nav-phone-brands"
+                  key={href}
+                  onMouseEnter={() => setOpenBrands(true)}
+                  onMouseLeave={() => setOpenBrands(false)}
+                  onFocusCapture={(e) => {
+                    if ((e.target as HTMLElement).tagName === "A")
+                      setOpenBrands(true);
+                  }}
+                  onBlurCapture={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget))
+                      setOpenBrands(false);
+                  }}
+                >
+                  <Link href={href}>{label}</Link>
+                  <button
+                    className="brand-menu-toggle"
+                    aria-label="برندهای گوشی موبایل"
+                    aria-expanded={openBrands}
+                    onClick={() => setOpenBrands(!openBrands)}
+                  >
+                    <ChevronDown size={13} />
+                  </button>
+                  <div
+                    className={`brand-dropdown ${openBrands ? "is-open" : ""}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setOpenBrands(false);
+                        (
+                          e.currentTarget.parentElement?.querySelector(
+                            "button",
+                          ) as HTMLButtonElement
+                        )?.focus();
+                      }
+                    }}
+                  >
+                    <span>همراهت را با برندش پیدا کن</span>
+                    {[
+                      ["Apple", "اپل"],
+                      ["Samsung", "سامسونگ"],
+                      ["Xiaomi", "شیائومی"],
+                      ["Honor", "آنر"],
+                      ["Google", "گوگل پیکسل"],
+                    ].map(([brand, label]) => (
+                      <Link
+                        key={brand}
+                        href={`/products?kind=phone&brand=${brand}`}
+                        onClick={() => setOpenBrands(false)}
+                      >
+                        <span>{label}</span>
+                        <b dir="ltr">{brand}</b>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : index === 1 ? (
+                <AccessoryMenu key={href} />
+              ) : (
+                <Link
+                  key={href}
+                  href={href}
+                  className={
+                    path === "/blog" && href === "/blog" ? "active" : ""
+                  }
+                >
+                  {label}
+                </Link>
+              ),
+            )}
           </div>
           <Link className="assistant-nav" href="/assistant">
             <Sparkles size={17} /> دستیار انتخاب آبی{" "}
@@ -114,7 +180,13 @@ export function Header() {
         </form>
       </header>
       <Modal open={open} onClose={() => setOpen(false)} title="آبی‌موبایل">
-        <nav className="mobile-menu">
+        <nav
+          className="mobile-menu"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest("a")) setOpen(false);
+          }}
+        >
+          <MobileAccessoryMenu />
           {[
             ...links,
             ["/compare", "مقایسه گوشی‌ها"],
@@ -158,6 +230,7 @@ export function Footer() {
           <Link href="/blog">مجله و راهنمای خرید</Link>
           <Link href="/about">درباره آبی‌موبایل</Link>
           <Link href="/contact">ارتباط با ما</Link>
+          <Link href="/club">باشگاه آبی</Link>
           <Link href="/credits">منابع تصاویر</Link>
         </div>
         <div>

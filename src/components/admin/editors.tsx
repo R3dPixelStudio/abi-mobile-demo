@@ -12,7 +12,7 @@ import { Plus, Trash2, Save } from "lucide-react";
 import type { Article, Product, Seo, Variant } from "@/lib/types";
 import { articleSchema, productSchema } from "@/lib/validation";
 import { imageSchema } from "@/lib/validation";
-import { useStore } from "@/lib/store";
+import { useCatalog, useStore } from "@/lib/store";
 
 export function Field({
   label,
@@ -160,6 +160,7 @@ export function ProductEditor({
   onSaved: () => void;
 }) {
   const [draft, setDraft] = useState(product);
+  const phones = useCatalog().filter((p) => p.kind === "phone");
   const [images, setImages] = useState(product.images.join("\n"));
   const [specs, setSpecs] = useState(
     Object.entries(product.specs)
@@ -294,6 +295,60 @@ export function ProductEditor({
             onChange={(e) => update("imageAlt", e.target.value)}
           />
         </Field>
+        {draft.kind === "accessory" && (
+          <Field
+            label="مدل‌های دقیق سازگار"
+            full
+            hint="برای قاب و گلس، فقط مدل‌هایی را انتخاب کنید که اندازه و برش‌های محصول با آن‌ها تطابق دارد. Ctrl یا Command برای انتخاب چند مدل."
+          >
+            <select
+              multiple
+              size={5}
+              value={draft.compatiblePhoneIds || []}
+              onChange={(e) => {
+                const ids = Array.from(
+                  e.target.selectedOptions,
+                  (o) => o.value,
+                );
+                setDraft((d) => ({
+                  ...d,
+                  compatiblePhoneIds: ids,
+                  compatibleBrands: Array.from(
+                    new Set(
+                      phones
+                        .filter((p) => ids.includes(p.id))
+                        .map((p) => p.brand),
+                    ),
+                  ),
+                }));
+                setSpecs((previous) =>
+                  [
+                    ...previous
+                      .split("\n")
+                      .filter(
+                        (line) => !/^(مدل سازگار|برند گوشی):/.test(line.trim()),
+                      ),
+                    ...(ids.length
+                      ? [
+                          `مدل سازگار: ${phones
+                            .filter((p) => ids.includes(p.id))
+                            .map((p) => p.name)
+                            .join("، ")}`,
+                          `برند گوشی: ${Array.from(new Set(phones.filter((p) => ids.includes(p.id)).map((p) => p.brand))).join("، ")}`,
+                        ]
+                      : []),
+                  ].join("\n"),
+                );
+              }}
+            >
+              {phones.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.brand} · {p.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
         <Field label="توضیحات محصول *" full>
           <textarea
             required
@@ -397,6 +452,24 @@ export function ProductEditor({
                     value={v.price}
                     onChange={(e) =>
                       changeVariant(v.id, { price: Number(e.target.value) })
+                    }
+                  />
+                </Field>
+                <Field
+                  label="قیمت قبلی برای قیمت آبی (تومان)"
+                  hint="اختیاری؛ باید از قیمت فعلی بیشتر باشد. قیمت فعلی همان مبلغ قابل پرداخت است."
+                >
+                  <input
+                    type="number"
+                    min={v.price + 1}
+                    max={1000000000}
+                    value={v.compareAtPrice ?? ""}
+                    onChange={(e) =>
+                      changeVariant(v.id, {
+                        compareAtPrice: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
+                      })
                     }
                   />
                 </Field>

@@ -4,6 +4,8 @@ Persian RTL phone and accessory store **presentation demo** built with Next.js A
 
 Source repository: [R3dPixelStudio/abi-mobile-demo](https://github.com/R3dPixelStudio/abi-mobile-demo).
 
+Public preview: [Abi Mobile on Cloudflare](https://abi-mobile-demo.reminiscent-comte.workers.dev). The owner confirmed claiming the Cloudflare account. Subsequent design revisions are local and are not reflected on that URL until the owner publishes them. See [hero design notes](docs/HERO-DESIGN.md) for the latest local changes and [verification](docs/VERIFICATION.md) for the earlier publication checks.
+
 ## Run locally
 
 Use Node 22 LTS or newer (local verification used Node 25.2.1), npm, and the committed lockfile.

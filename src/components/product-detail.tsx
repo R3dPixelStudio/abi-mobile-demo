@@ -10,10 +10,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useCatalog, useStore } from "@/lib/store";
-import { number } from "@/lib/domain";
 import type { Product } from "@/lib/types";
 import { Breadcrumb, DemoNote, Empty, Quantity, SectionTitle } from "./ui";
 import { ProductCard } from "./product-card";
+import { fitsPhone } from "@/lib/compatibility";
+import { AccessoryLinks } from "./accessory-finder";
+import { BluePrice } from "./blue-price";
+import { PointsHint } from "./club";
+import { ProductGallery } from "./product-gallery";
+import { ProductInformation } from "./product-information";
 export function ProductDetail({
   seed,
   previewId,
@@ -50,7 +55,6 @@ function ProductContent({
   const [variantId, setVariant] = useState(p.variants[0].id);
   const variant = p.variants.find((v) => v.id === variantId) || p.variants[0];
   const [quantity, setQuantity] = useState(1);
-  const [image, setImage] = useState(0);
   const ready = useStore((s) => s.ready);
   const add = useStore((s) => s.add);
   const wish = useStore((s) => s.wishlist.includes(p.id));
@@ -70,32 +74,7 @@ function ProductContent({
         </DemoNote>
       )}
       <div className="product-detail">
-        <div className="gallery">
-          <div className="gallery-main">
-            <span className="gallery-brand">{p.brand}</span>
-            <img
-              src={p.images[image] || p.images[0]}
-              alt={p.imageAlt}
-              width={560}
-              height={560}
-            />
-            <span className="gallery-caption">
-              تصویر مرجع مدل؛ رنگ انتخابی ممکن است در تصویر نمایش داده نشود.
-            </span>
-          </div>
-          <div className="gallery-thumbs">
-            {p.images.map((src, i) => (
-              <button
-                key={src + i}
-                onClick={() => setImage(i)}
-                aria-label={`تصویر ${number(i + 1)}`}
-                aria-pressed={i === image}
-              >
-                <img src={src} alt="" width={65} height={65} />
-              </button>
-            ))}
-          </div>
-        </div>
+        <ProductGallery product={p} />
         <div className="detail-content">
           <span className="eyebrow">
             {p.category} · {p.brand}
@@ -126,7 +105,7 @@ function ProductContent({
             <Link href="/compare">مشاهده مقایسه</Link>
           </div>
           <div className="variant-section">
-            <h2>رنگ و ظرفیت</h2>
+            <h2>{p.kind === "phone" ? "رنگ و ظرفیت" : "رنگ و مدل سازگار"}</h2>
             <div className="variant-options">
               {p.variants.map((v) => (
                 <button
@@ -171,7 +150,7 @@ function ProductContent({
                     : "این تنوع فعلاً ناموجود است"}
                 </span>
                 <div className="detail-price">
-                  {number(variant.price)} <small>تومان</small>
+                  <BluePrice variant={variant} />
                 </div>
               </div>
               <Quantity
@@ -191,6 +170,7 @@ function ProductContent({
               <ShoppingBag size={19} />
               {variant.stock ? "افزودن به سبد خرید" : "ناموجود"}
             </button>
+            <PointsHint amount={variant.price * quantity} />
             <div className="buy-hints">
               <span>
                 <ShieldCheck size={15} /> اطلاعات گارانتی نمایشی
@@ -202,24 +182,53 @@ function ProductContent({
           </div>
         </div>
       </div>
-      <section className="section detail-specs">
-        <SectionTitle eyebrow="جزئیات مهم‌اند" title="مشخصات فنی" />
-        <dl>
-          {Object.entries(p.specs).map(([k, v]) => (
-            <div key={k}>
-              <dt>{k}</dt>
-              <dd>
-                <bdi>{v}</bdi>
-              </dd>
+      <ProductInformation product={p} />
+      {p.kind === "phone" && (
+        <section className="section fitted-section" id="fitted-accessories">
+          <div className="fitted-heading">
+            <div>
+              <span className="eyebrow">هم‌اندازه. هم‌مسیر. همراه.</span>
+              <h2>
+                همراه‌های مخصوص <bdi>{p.name}</bdi>
+              </h2>
+              <p>
+                قاب و گلس با سازگاری همین مدل؛ انتخاب ساده‌تر، اندازه دقیق‌تر.
+              </p>
             </div>
-          ))}
-        </dl>
-        <DemoNote>
-          مشخصات به مدل مرجع مربوط‌اند. پیش از عرضه واقعی، شناسه دقیق کالا،
-          منطقه فروش، رجیستری، گارانتی و سازگاری لوازم بررسی می‌شود.
-        </DemoNote>
-      </section>
-      <div className="detail-guide panel">
+            <AccessoryLinks phone={p} />
+          </div>
+          <div className="products-grid">
+            {catalog
+              .filter((a) => fitsPhone(a, p))
+              .slice(0, 4)
+              .map((a) => (
+                <ProductCard key={a.id} product={a} />
+              ))}
+          </div>
+          {!catalog.some((a) => fitsPhone(a, p)) && (
+            <p className="muted">
+              هنوز قاب یا گلس تأییدشده‌ای برای این مدل در کاتالوگ ثبت نشده است.
+            </p>
+          )}
+        </section>
+      )}
+      {p.kind === "accessory" && !!p.compatiblePhoneIds?.length && (
+        <div className="fit-confirmation">
+          <span>اندازه این مدل، نه هر گوشی دیگری.</span>
+          <strong>
+            سازگار با{" "}
+            {catalog
+              .filter((x) => p.compatiblePhoneIds?.includes(x.id))
+              .map((x) => x.name)
+              .join("، ")}
+          </strong>
+          <p>
+            سازگاری ثبت‌شده در کاتالوگ نمایشی؛ پیش از خرید واقعی نیازمند تأیید
+            فروشگاه است.
+          </p>
+        </div>
+      )}
+      <div className="detail-guide panel" id="buying-guide">
         <div>
           <span className="eyebrow">انتخاب آگاهانه</span>
           <h3>قبل از خرید، راهنمای انتخاب را بخوان</h3>

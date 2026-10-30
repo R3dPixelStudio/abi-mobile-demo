@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { products } from "../../src/data/products";
 
 async function noOverflow(page: Page) {
   expect(
@@ -30,14 +31,14 @@ test("mobile shopping, persistent discount, checkout and OTP account", async ({
   await page.goto("/cart");
   await page.reload();
   await expect(page.locator(".cart-line")).toHaveCount(1);
-  await page.getByLabel("کد تخفیف", { exact: true }).fill("ABI10");
+  await page.getByLabel("کد قیمت آبی", { exact: true }).fill("ABI10");
   await page.getByRole("button", { name: "اعمال", exact: true }).click();
   const discounted = await page.locator(".summary-total strong").innerText();
   await page.getByRole("link", { name: "ادامه و ثبت سفارش" }).click();
   await expect(page).toHaveURL(/\/checkout$/);
   await page.reload();
   await expect(page.locator(".summary-total strong")).toHaveText(discounted);
-  await expect(page.getByLabel("کد تخفیف", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("کد قیمت آبی", { exact: true })).toHaveValue(
     "ABI10",
   );
   await page.getByRole("button", { name: "پر کردن اطلاعات نمونه" }).click();
@@ -197,7 +198,7 @@ test("admin product and article creation, previews, edit, confirmation and reset
   ).toBeVisible();
   await page.getByRole("button", { name: "ورود به پنل نمایشی" }).click();
   await page.goto("/admin/products");
-  await expect(page.locator("tbody tr")).toHaveCount(32);
+  await expect(page.locator("tbody tr")).toHaveCount(products.length);
   await page.setViewportSize({ width: 360, height: 800 });
   await noOverflow(page);
   await page.screenshot({
@@ -216,10 +217,11 @@ test("presentation screenshots, initial content, assets and reduced motion", asy
   await page.goto("/");
   await expect(page.locator(".hero")).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
-  await page
-    .locator(".hero-product")
-    .evaluate((img: HTMLImageElement) => img.decode());
-  await expect(page.locator(".hero canvas")).toHaveCount(0);
+  await expect(page.locator(".phone-experience")).toHaveAttribute(
+    "data-motion",
+    "reduced",
+  );
+  await expect(page.locator(".phone-dom-object .phone-site")).toBeVisible();
   await page.screenshot({ path: "test-results/desktop-hero.png" });
   await page.screenshot({
     path: "test-results/desktop-home.png",

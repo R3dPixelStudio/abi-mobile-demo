@@ -17,21 +17,39 @@ export const seoSchema = z.object({
   description: z.string().max(300),
   image: z.union([imageSchema, z.literal("")]),
 });
-export const variantSchema = z.object({
-  id: text,
-  color: text,
-  colorHex: z.string().regex(/^#[a-fA-F0-9]{6}$/),
-  storage: text,
-  price: z.number().int().min(1000).max(1000000000),
-  stock: z.number().int().min(0).max(10000),
-});
+export const variantSchema = z
+  .object({
+    id: text,
+    color: text,
+    colorHex: z.string().regex(/^#[a-fA-F0-9]{6}$/),
+    storage: text,
+    price: z.number().int().min(1000).max(1000000000),
+    compareAtPrice: z.number().int().min(1000).max(1000000000).optional(),
+    stock: z.number().int().min(0).max(10000),
+  })
+  .refine((v) => v.compareAtPrice === undefined || v.compareAtPrice > v.price, {
+    path: ["compareAtPrice"],
+    message: "قیمت قبلی باید از قیمت آبی بیشتر باشد",
+  });
 export const productSchema = z.object({
+  referenceUrl: z.string().url().max(1000).startsWith("https://").optional(),
+  overview: z
+    .array(
+      z.object({
+        title: z.string().min(1).max(100),
+        text: z.string().min(1).max(1000),
+      }),
+    )
+    .max(8)
+    .optional(),
   id: text,
   slug,
   name: text,
   brand: text,
   kind: z.enum(["phone", "accessory"]),
   category: text,
+  compatiblePhoneIds: z.array(text).max(100).optional(),
+  compatibleBrands: z.array(text).max(30).optional(),
   description: z.string().min(1).max(3000),
   images: z.array(imageSchema).min(1).max(6),
   imageAlt: text,
@@ -94,6 +112,7 @@ export const addressSchema = z.object({
   postal: z.string().regex(/^\d{10}$/),
 });
 export const orderSchema = z.object({
+  bluePoints: z.number().int().min(0).max(10000000).optional(),
   id: text,
   date: z.string().datetime(),
   lines: z

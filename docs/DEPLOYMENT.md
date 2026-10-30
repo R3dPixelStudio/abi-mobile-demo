@@ -15,10 +15,20 @@ Official references checked during implementation:
 - [Wrangler commands](https://developers.cloudflare.com/workers/wrangler/commands/)
 - [Groq supported models](https://console.groq.com/docs/models)
 
-## First publication
+## Current publication and permanent ownership
 
-1. While signed into **R3dPixelStudio**, create an empty `abi-mobile-demo` repository. Grant the connected GitHub app access if using the connector. For command-line push, authenticate Git Credential Manager to the intended account. Never share the token/password with the application or put it in project files.
-2. From the existing local repository, add the verified repository as `origin` and push `main`. Do not overwrite an existing remote branch.
+The owner has claimed the existing Cloudflare account and authorized a release of the locally approved interactive hero, watch/accessory catalog, product galleries and blue club. Wrangler OAuth is authenticated to the existing Reminiscent Comte account; its existing Worker and prior version were confirmed before updating. This release uses the same public URL below. The older temporary-account instructions below are historical. No fresh temporary account should be created for this site.
+
+The approved release builds with `npm run build:cloudflare` and deploys with `npm run deploy`; the test suite was intentionally not rerun at the owner's request. The GitHub release commit uses `[skip ci]` for this presentation update. Manufacturer reference media rights remain documented in ASSETS.md; this is a presentation demo, not production commerce.
+
+Source is published on `main` in the verified repository above. The October 29 public preview is https://abi-mobile-demo.reminiscent-comte.workers.dev, Worker version `0dc3026d-ee7c-468a-aad8-36f70128302d`. Its build uses that origin for canonical/social/sitemap URLs. It runs in a temporary Cloudflare account and needs owner claim before expiry. The private claim link was delivered separately and is intentionally absent from source control. The earlier October 28 preview expired.
+
+Claim the temporary account through the private Cloudflare link, or authenticate Wrangler to your permanent account and deploy there. Claiming and configuring GitHub deployment credentials are owner account actions; neither is implied by a successful temporary deploy. Automated public browser checks encountered Cloudflare's preview security challenge; HTTP smoke checks passed.
+
+## Deploy to an owned account
+
+1. The GitHub repository already exists under **R3dPixelStudio**, and source has been uploaded through the connected GitHub app. For later command-line pushes, authenticate Git Credential Manager to the intended account. Never share a token/password with the application or put it in project files.
+2. Use the existing `origin` and `main`. Inspect changes before pushing; do not overwrite unrelated remote work.
 3. Run `npx wrangler login` and complete Cloudflare OAuth yourself. Select the intended account; enable its free Workers subdomain if necessary. No domain purchase is needed.
 4. Build and publish:
 

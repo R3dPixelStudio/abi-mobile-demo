@@ -1,4 +1,4 @@
-# Verification record — 2026-10-28
+# Verification record — 2026-10-29
 
 This separates source checks, local browser/runtime checks and remote publication. It is not a production certification.
 
@@ -14,9 +14,12 @@ This separates source checks, local browser/runtime checks and remote publicatio
 | Initial HTML | All seeded product names and full initial article paragraphs checked in HTTP responses |
 | Demo API | Valid retrieval, no-key fallback, cross-origin 403, wrong type 415, malformed/invalid 400, oversized 413, GET 405 passed |
 | Dependency audit | Full `npm audit --json`: zero vulnerabilities after scoped transitive build-tool patches |
-| Lockfile | Regenerated cleanly from pinned dependencies; clean-install dry run passed; installed patched dependencies and rebuilt successfully |
+| Lockfile | Initial GitHub Linux install exposed incomplete optional dependency records. Regenerated in a clean directory with npm 10.9.9 targeting Linux x64; matching `npm ci --dry-run` passed and audit reported zero vulnerabilities. Next types now generate before type checking on a clean checkout. |
 | Visual inspection | Desktop hero and 360 px hero/product screenshots inspected; browser checks found no document overflow on tested customer/admin pages |
-| Public Cloudflare | Temporary Worker deployed on October 28 to abi-mobile-demo.gusty-emu.workers.dev; it no longer resolves on October 29. No permanent account was claimed. A new deployment is required. |
+| Public Cloudflare | October 29 deployment: https://abi-mobile-demo.reminiscent-comte.workers.dev, version `0dc3026d-ee7c-468a-aad8-36f70128302d`. Owner claim is required before temporary-account expiry. October 28 preview expired. |
+| Public HTTP verification | 98 page/asset requests, three unknown-route 404 checks, eight API cases, robots and sitemap passed against the October 29 public Worker. |
+| Public browser verification | Five automated journeys were blocked by Cloudflare's temporary-preview security challenge. This is not a pass for live browser interactions; the five journeys passed against the local Worker. |
+| GitHub source | Published to https://github.com/R3dPixelStudio/abi-mobile-demo. Linux verification rerun after the lockfile fix; see Actions for current status. |
 
 ## Browser coverage
 

@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/vazirmatn";
 import "./globals.css";
 import "./shop.css";
+import "./hero.css";
+import "./experience.css";
+import "./category-club.css";
+import "./catalogue.css";
 import { Providers } from "@/components/providers";
 import { branding } from "@/lib/brand";
 export const metadata: Metadata = {

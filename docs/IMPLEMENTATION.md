@@ -13,7 +13,7 @@ Persian RTL technology boutique, white/cool grey surfaces, sky-blue brand accent
 - [x] AI: deterministic catalog recommendation, optional guarded server Groq route, bounded inputs/timeouts/output and public rate limits; canonical catalog facts only.
 - [x] Content/SEO: SSR seed detail routes, blog and informational pages, unique metadata, noindex, canonical config, sitemap, safe JSON-LD with Rial conversion.
 - [x] Verification: domain tests, customer/admin journey checks, type/lint/Next and Worker builds, mobile/desktop visual inspection, direct route and API smoke checks.
-- [ ] Handoff: GitHub source and Cloudflare publication where accounts allow, verify real URLs; README, asset rights notes, deployment and production migration checklist.
+- [x] Handoff: GitHub source, verified temporary Cloudflare URL, README, asset rights notes, deployment and production migration checklist. Permanent Cloudflare account claim and deployment credentials remain owner actions.
 
 ## Contracts
 `Product`: id/slug/name/brand/kind/category/description/images/specs/variants/featured/seo. `Variant`: id/color/colorHex/storage/price/stock. `Article`: id/slug/title/excerpt/content (paragraph strings)/cover/category/tags/status/seo/date. Browser storage is schema-validated before merging. Cart stores product/variant IDs and quantities; prices are derived from current catalog. Orders snapshot reviewed line data. Deleted/unavailable variants block checkout rather than disappearing silently.

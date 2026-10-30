@@ -10,7 +10,7 @@ export default async function Page({
   const { section = [] } = await params;
   if (
     section.length > 1 ||
-    !["", "orders", "addresses", "wishlist", "settings"].includes(
+    !["", "orders", "addresses", "wishlist", "settings", "club"].includes(
       section[0] || "",
     )
   )

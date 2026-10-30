@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { NavigationProgress } from "./experience-loading";
 export function Providers({ children }: { children: React.ReactNode }) {
   const [storageFailed, setStorageFailed] = useState(false);
   useEffect(() => {
@@ -23,6 +24,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [notice, notify]);
   return (
     <>
+      <Suspense fallback={null}>
+        <NavigationProgress />
+      </Suspense>
       {storageFailed && (
         <div className="demo-note" role="alert">
           ذخیره در مرورگر در دسترس نیست؛ تغییرات این جلسه ممکن است پس از بستن

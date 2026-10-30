@@ -9,10 +9,10 @@ import { useStore } from "../src/lib/store";
 import { mergeProducts, productHref } from "../src/lib/repository";
 test("catalog counts, identities and all seed schemas are valid", () => {
   assert.equal(products.filter((p) => p.kind === "phone").length, 20);
-  assert.equal(products.filter((p) => p.kind === "accessory").length, 12);
+  assert.ok(products.filter((p) => p.kind === "accessory").length >= 12);
   assert.equal(articles.length, 6);
-  assert.equal(new Set(products.map((p) => p.id)).size, 32);
-  assert.equal(new Set(products.map((p) => p.slug)).size, 32);
+  assert.equal(new Set(products.map((p) => p.id)).size, products.length);
+  assert.equal(new Set(products.map((p) => p.slug)).size, products.length);
   for (const p of products)
     assert.equal(
       productSchema.safeParse(p).success,
@@ -34,6 +34,23 @@ test("every bundled image exists and SVGs contain no executable content", () => 
         /<script|onload=|javascript:|<foreignObject/i,
       );
   }
+});
+test("expanded catalog has watches and complete model-specific phone information", () => {
+  assert.ok(products.filter((p) => p.category === "ساعت هوشمند").length >= 7);
+  for (const p of products.filter((p) => p.kind === "phone")) {
+    assert.ok(Object.keys(p.specs).length >= 20, p.id);
+    assert.equal(p.overview?.length, 4, p.id);
+    assert.ok(p.referenceUrl?.startsWith("https://"), p.id);
+    assert.ok(p.images.length >= 1, p.id);
+    assert.ok(
+      p.images.every((image) => !/placeholder|unavailable/.test(image)),
+      p.id,
+    );
+  }
+  assert.ok(
+    products.filter((p) => p.kind === "phone" && p.images.length >= 2).length >=
+      16,
+  );
 });
 test("JSON-LD explicitly converts Toman to Rial", () => {
   const p = products[0];
@@ -84,9 +101,15 @@ test("new local product has working preview path; duplicate slugs rejected", () 
   const p = { ...products[0], id: "new-local", slug: "new-local" };
   s().saveProduct(p);
   assert.equal(productHref(p), "/preview/product?id=new-local");
-  assert.equal(mergeProducts(s().products, s().deletedProducts).length, 33);
+  assert.equal(
+    mergeProducts(s().products, s().deletedProducts).length,
+    products.length + 1,
+  );
   assert.throws(() => s().saveProduct({ ...p, id: "duplicate" }));
   s().deleteProduct(p.id);
-  assert.equal(mergeProducts(s().products, s().deletedProducts).length, 32);
+  assert.equal(
+    mergeProducts(s().products, s().deletedProducts).length,
+    products.length,
+  );
   s().reset();
 });

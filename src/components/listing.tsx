@@ -5,7 +5,11 @@ import { SlidersHorizontal, X, Search } from "lucide-react";
 import { useCatalog, useStore } from "@/lib/store";
 import { normalize, priceOf, inStock, number } from "@/lib/domain";
 import { ProductCard } from "./product-card";
-import { Breadcrumb, Empty, Modal } from "./ui";
+import { Breadcrumb, Modal } from "./ui";
+import { AccessoryFinder } from "./accessory-finder";
+import { SearchEmpty } from "./search-empty";
+import { productSearchText, searchText } from "@/lib/search";
+import { CategoryHero } from "./category-hero";
 export function Listing() {
   const all = useCatalog();
   const settings = useStore((s) => s.settings);
@@ -21,37 +25,40 @@ export function Listing() {
   const offer = search.get("offer") === "1";
   const storage = search.get("storage") || "";
   const sort = search.get("sort") || "featured";
+  const phone = search.get("phone") || "";
+  const deviceBrand = search.get("deviceBrand") || "";
   const change = (key: string, value: string) => {
     const next = new URLSearchParams(search.toString());
     if (value) next.set(key, value);
     else next.delete(key);
+    window.dispatchEvent(new Event("abi-navigation-start"));
     router.replace(`/products?${next.toString()}`, { scroll: false });
   };
-  const filtered = all
+  const scope = all.filter(
+    (p) =>
+      (!phone || p.compatiblePhoneIds?.includes(phone)) &&
+      (!deviceBrand || p.compatibleBrands?.includes(deviceBrand)),
+  );
+  const withoutQuery = scope.filter(
+    (p) =>
+      (!kind || p.kind === kind) &&
+      (!brand || p.brand === brand) &&
+      (!category || normalize(p.category).includes(normalize(category))) &&
+      (!max || priceOf(p) <= max) &&
+      (!stock || inStock(p)) &&
+      (!offer || p.offer) &&
+      (!storage ||
+        p.variants.some(
+          (v) => parseInt(normalize(v.storage)) >= Number(storage),
+        )),
+  );
+  const filtered = withoutQuery
     .filter(
       (p) =>
-        (!kind || p.kind === kind) &&
-        (!brand || p.brand === brand) &&
-        (!category || normalize(p.category).includes(normalize(category))) &&
-        (!max || priceOf(p) <= max) &&
-        (!stock || inStock(p)) &&
-        (!offer || p.offer) &&
-        (!storage ||
-          p.variants.some(
-            (v) => parseInt(normalize(v.storage)) >= Number(storage),
-          )) &&
-        (!q ||
-          normalize(
-            p.name +
-              " " +
-              p.slug.replaceAll("-", " ") +
-              " " +
-              p.brand +
-              " " +
-              p.category +
-              " " +
-              p.description,
-          ).includes(normalize(q))),
+        !q ||
+        searchText(q)
+          .split(" ")
+          .every((t) => productSearchText(p).includes(t)),
     )
     .sort((a, b) =>
       sort === "low"
@@ -82,10 +89,14 @@ export function Listing() {
         </select>
       </label>
       <label className="field">
-        برند
+        برند کالا
         <select value={brand} onChange={(e) => change("brand", e.target.value)}>
           <option value="">همه برندها</option>
-          {settings.brands.map((b) => (
+          {Array.from(
+            new Set(
+              all.filter((p) => !kind || p.kind === kind).map((p) => p.brand),
+            ),
+          ).map((b) => (
             <option key={b}>{b}</option>
           ))}
         </select>
@@ -97,7 +108,9 @@ export function Listing() {
           onChange={(e) => change("category", e.target.value)}
         >
           <option value="">همه دسته‌ها</option>
-          {settings.categories.map((c) => (
+          {Array.from(
+            new Set([...settings.categories, ...all.map((p) => p.category)]),
+          ).map((c) => (
             <option key={c}>{c}</option>
           ))}
         </select>
@@ -109,25 +122,30 @@ export function Listing() {
           onChange={(e) => change("max", e.target.value)}
         >
           <option value="">بدون محدودیت</option>
-          <option value="10000000">۱۰ میلیون تومان</option>
-          <option value="25000000">۲۵ میلیون تومان</option>
-          <option value="40000000">۴۰ میلیون تومان</option>
-          <option value="70000000">۷۰ میلیون تومان</option>
-          <option value="120000000">۱۲۰ میلیون تومان</option>
+          {(kind === "accessory" || (category && category !== "گوشی موبایل")
+            ? [500000, 1000000, 3000000, 5000000, 10000000, 25000000, 50000000]
+            : [10000000, 25000000, 40000000, 70000000, 120000000]
+          ).map((value) => (
+            <option key={value} value={value}>
+              {number(value)} تومان
+            </option>
+          ))}
         </select>
       </label>
-      <label className="field">
-        حداقل حافظه
-        <select
-          value={storage}
-          onChange={(e) => change("storage", e.target.value)}
-        >
-          <option value="">همه ظرفیت‌ها</option>
-          <option value="128">۱۲۸ گیگابایت</option>
-          <option value="256">۲۵۶ گیگابایت</option>
-          <option value="512">۵۱۲ گیگابایت</option>
-        </select>
-      </label>
+      {kind !== "accessory" && !category.includes("ساعت") && (
+        <label className="field">
+          حداقل حافظه
+          <select
+            value={storage}
+            onChange={(e) => change("storage", e.target.value)}
+          >
+            <option value="">همه ظرفیت‌ها</option>
+            <option value="128">۱۲۸ گیگابایت</option>
+            <option value="256">۲۵۶ گیگابایت</option>
+            <option value="512">۵۱۲ گیگابایت</option>
+          </select>
+        </label>
+      )}
       <label className="check">
         <input
           type="checkbox"
@@ -142,7 +160,7 @@ export function Listing() {
           checked={offer}
           onChange={(e) => change("offer", e.target.checked ? "1" : "")}
         />{" "}
-        پیشنهادهای ویژه
+        قیمت آبی
       </label>
       <div className="filter-note">
         همه قیمت‌ها نمونه‌اند.
@@ -154,22 +172,60 @@ export function Listing() {
   return (
     <div className="container">
       <Breadcrumb items={[{ label: "فروشگاه" }]} />
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">انتخابی متناسب با دنیای تو</span>
-          <h1>
-            {q
-              ? `نتایج جستجوی «${q}»`
-              : kind === "accessory"
-                ? "لوازم جانبی"
-                : offer
-                  ? "پیشنهادهای ویژه"
-                  : "گوشی و لوازم جانبی"}
-          </h1>
-          <p>{number(filtered.length)} محصول برای کشف و مقایسه</p>
+      {!q && (
+        <CategoryHero
+          kind={kind}
+          category={category}
+          brand={brand || deviceBrand}
+          count={filtered.length}
+          offer={offer}
+          image={
+            withoutQuery.find((p) =>
+              kind === "phone"
+                ? p.kind === "phone"
+                : !!category && p.category === category,
+            )?.images[0]
+          }
+        />
+      )}
+      {q && (
+        <div className="page-heading">
+          <div>
+            <span className="eyebrow">انتخابی متناسب با دنیای تو</span>
+            <h1>
+              {q
+                ? `نتایج جستجوی «${q}»`
+                : kind === "accessory"
+                  ? "لوازم جانبی"
+                  : offer
+                    ? "قیمت آبی"
+                    : "گوشی و لوازم جانبی"}
+            </h1>
+            <p>{number(filtered.length)} محصول برای کشف و مقایسه</p>
+          </div>
         </div>
-      </div>
-      <div className="listing-layout">
+      )}
+      {(kind === "accessory" ||
+        phone ||
+        deviceBrand ||
+        (category && category !== "گوشی موبایل")) &&
+        (!category || /قاب|گلس/.test(category)) && (
+          <AccessoryFinder
+            deviceBrand={deviceBrand}
+            phoneId={phone}
+            onBrand={(value) => {
+              const next = new URLSearchParams(search.toString());
+              next.set("kind", "accessory");
+              next.delete("phone");
+              next.delete("brand");
+              if (value) next.set("deviceBrand", value);
+              else next.delete("deviceBrand");
+              router.replace("/products?" + next, { scroll: false });
+            }}
+            onPhone={(value) => change("phone", value)}
+          />
+        )}
+      <div id="catalog" className="listing-layout">
         <aside className="filter-sidebar panel">{controls}</aside>
         <div className="listing-main">
           <div className="listing-toolbar">
@@ -209,9 +265,18 @@ export function Listing() {
               </select>
             </label>
           </div>
-          {[q, brand, category, kind, max, stock, offer, storage].some(
-            Boolean,
-          ) && (
+          {[
+            q,
+            brand,
+            category,
+            kind,
+            max,
+            stock,
+            offer,
+            storage,
+            phone,
+            deviceBrand,
+          ].some(Boolean) && (
             <div className="active-filters">
               {Array.from(search.entries())
                 .filter(([k]) => k !== "sort")
@@ -231,6 +296,8 @@ export function Listing() {
                         offer: "ویژه",
                         storage: "حافظه",
                         category: "دسته",
+                        phone: "مدل گوشی",
+                        deviceBrand: "برند گوشی",
                       } as Record<string, string>
                     )[k] || k}
                     :{" "}
@@ -242,7 +309,9 @@ export function Listing() {
                           ? "لوازم"
                           : v === "1"
                             ? "بله"
-                            : v}
+                            : k === "phone"
+                              ? all.find((p) => p.id === v)?.name || v
+                              : v}
                     <X size={12} />
                   </button>
                 ))}
@@ -255,9 +324,10 @@ export function Listing() {
               ))}
             </div>
           ) : (
-            <Empty
-              title="گزینه‌ای با این مشخصات پیدا نشد"
-              text="بودجه یا فیلترها را تغییر بده تا انتخاب‌های بیشتری ببینی."
+            <SearchEmpty
+              query={q}
+              catalog={withoutQuery}
+              filtered={!!(phone || deviceBrand || brand || max)}
             />
           )}
         </div>

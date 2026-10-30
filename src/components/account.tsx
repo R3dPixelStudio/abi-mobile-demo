@@ -14,6 +14,7 @@ import {
   Plus,
   Trash2,
   Pencil,
+  Sparkles,
 } from "lucide-react";
 import { useCatalog, useStore } from "@/lib/store";
 import { digits, validPhone, money, date } from "@/lib/domain";
@@ -21,9 +22,13 @@ import { addressSchema } from "@/lib/validation";
 import type { Address } from "@/lib/types";
 import { Breadcrumb, DemoNote, Empty, Modal } from "./ui";
 import { ProductCard } from "./product-card";
+import { ClubPanel } from "./club";
+import { orderBluePoints } from "@/lib/club";
+import { number } from "@/lib/domain";
 const tabs = [
   ["", "نمای کلی", UserRound],
   ["orders", "سفارش‌های من", Package],
+  ["club", "باشگاه آبی", Sparkles],
   ["addresses", "نشانی‌ها", MapPin],
   ["wishlist", "علاقه‌مندی‌ها", Heart],
   ["settings", "تنظیمات حساب", Settings],
@@ -204,7 +209,9 @@ export function Account({ section = "" }: { section?: string }) {
             حساب و داده‌ها آزمایشی‌اند و فقط در این مرورگر ذخیره می‌شوند.
             اطلاعات واقعی وارد نکنید.
           </DemoNote>
-          {section === "wishlist" ? (
+          {section === "club" ? (
+            <ClubPanel embedded />
+          ) : section === "wishlist" ? (
             <>
               {catalog.filter((p) => s.wishlist.includes(p.id)).length ? (
                 <div className="products-grid account-products">
@@ -248,7 +255,7 @@ export function Account({ section = "" }: { section?: string }) {
                   </div>
                 ))}
                 <div className="row between">
-                  <span>تخفیف</span>
+                  <span>کاهش با قیمت آبی</span>
                   <span>{money(order.discount)}</span>
                 </div>
                 <div className="row between">
@@ -258,6 +265,10 @@ export function Account({ section = "" }: { section?: string }) {
                 <div className="row between">
                   <span>مبلغ نمایشی</span>
                   <strong>{money(order.total)}</strong>
+                </div>
+                <div className="order-earned-points">
+                  ✦ {number(orderBluePoints(order))} امتیاز آبی از این سفارش
+                  آزمایشی
                 </div>
                 <p>
                   {order.contact.name} · {order.contact.address}
@@ -366,6 +377,7 @@ export function Account({ section = "" }: { section?: string }) {
             </div>
           ) : (
             <>
+              <ClubPanel compact />
               <div className="account-stats">
                 <Link className="panel" href="/account/orders">
                   <Package />

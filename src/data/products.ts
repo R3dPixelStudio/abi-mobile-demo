@@ -1,4 +1,17 @@
 import type { Product } from "../lib/types";
+import { expandedAccessories } from "./expanded-accessories";
+import { enrichPhone } from "./phone-details";
+import mediaData from "./catalog-media.json";
+const media: Record<
+  string,
+  {
+    path?: string;
+    source?: string;
+    rights?: string;
+    url?: string;
+    error?: string;
+  }[]
+> = mediaData;
 
 // Seed inventory and integer Toman prices are illustrative, not live availability.
 type PhoneSeed = [
@@ -520,8 +533,140 @@ const accessorySeeds: AccessorySeed[] = [
   ],
 ];
 
-export const products: Product[] = [
+const fittedAccessories: Product[] = phoneProducts.flatMap((phone, index) =>
+  (["case", "glass"] as const).map((type): Product => {
+    const isCase = type === "case",
+      id = `${phone.id}-${type}`,
+      name = `${isCase ? "قاب شفاف آبی" : "گلس شفاف آبی"} برای ${phone.name}`;
+    const description = `${isCase ? "قاب شفاف با لبه محافظ" : "محافظ صفحه شفاف"} اختصاصی ${phone.name}. نمونه نمایشی از مجموعه آبی استودیو؛ اندازه و برش‌ها فقط برای همین مدل در نظر گرفته شده‌اند. تصویر شماتیک است؛ سازگاری و کیفیت باید پیش از فروش واقعی با کالای تأمین‌شده تأیید شود.`;
+    return {
+      id,
+      slug: id,
+      name,
+      brand: "آبی استودیو",
+      kind: "accessory",
+      category: isCase ? "قاب و محافظ" : "گلس و محافظ صفحه",
+      compatiblePhoneIds: [phone.id],
+      compatibleBrands: [phone.brand],
+      description,
+      images: [isCase ? "/products/case.svg" : "/products/glass.svg"],
+      imageAlt: `طرح شماتیک ${isCase ? "قاب" : "گلس"} مناسب ${phone.name}`,
+      specs: {
+        "مدل سازگار": phone.name,
+        "برند گوشی": phone.brand,
+        نوع: isCase ? "قاب TPU شفاف" : "محافظ شیشه‌ای صفحه",
+        مجموعه: "آبی استودیو · نمایشی",
+      },
+      variants: [
+        {
+          id: `${id}-clear`,
+          color: "شفاف",
+          colorHex: "#d5eafa",
+          storage: phone.name,
+          price: (isCase ? 390000 : 250000) + (index % 4) * 50000,
+          stock: index % 7 === 6 ? 0 : 9,
+        },
+      ],
+      featured: false,
+      offer: false,
+      seo: {
+        title: name,
+        description: description.slice(0, 250),
+        image: isCase ? "/products/case.svg" : "/products/glass.svg",
+      },
+    };
+  }),
+);
+
+// Names and these limited specifications were checked against official manufacturer pages.
+const brandedAccessorySeeds: {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  price: number;
+  art: string;
+  specs: Record<string, string>;
+}[] = [
+  {
+    id: "anker-nano-3-30w",
+    name: "شارژر Anker 511 Nano 3 · سی وات",
+    brand: "Anker",
+    category: "شارژر",
+    price: 1490000,
+    art: "charger",
+    specs: {
+      مدل: "A2147",
+      توان: "۳۰ وات",
+      درگاه: "USB-C",
+      پروتکل: "PPS / PowerIQ 3.0",
+    },
+  },
+  {
+    id: "soundcore-p20i",
+    name: "هدفون Soundcore P20i",
+    brand: "Soundcore",
+    category: "هدفون",
+    price: 2690000,
+    art: "earbuds",
+    specs: {
+      درایور: "۱۰ میلی‌متر",
+      اتصال: "Bluetooth 5.3",
+      "شارژدهی با کیس": "تا ۳۰ ساعت، بسته به استفاده",
+    },
+  },
+  {
+    id: "anker-325-20k",
+    name: "پاوربانک Anker 325 PowerCore 20K",
+    brand: "Anker",
+    category: "پاوربانک",
+    price: 3290000,
+    art: "powerbank",
+    specs: {
+      مدل: "A1268",
+      ظرفیت: "۲۰۰۰۰ میلی‌آمپرساعت",
+      خروجی: "دو USB-A",
+      "USB-C": "فقط ورودی؛ خروجی ندارد",
+    },
+  },
+];
+const brandedAccessories: Product[] = brandedAccessorySeeds.map(
+  (item): Product => {
+    const image = `/products/${item.art}.svg`;
+    const description = `${item.name} در کاتالوگ نمایشی آبی. مشخصات محدود این مدل از منبع سازنده بررسی شده‌اند. تصویر صرفاً شماتیک دسته محصول است؛ عکس این مدل نیست. قیمت و موجودی نمونه‌اند و به بازار واقعی یا موجودی فروشگاه اشاره ندارند.`;
+    return {
+      id: item.id,
+      slug: item.id,
+      name: item.name,
+      brand: item.brand,
+      kind: "accessory",
+      category: item.category,
+      description,
+      images: [image],
+      imageAlt: `طرح شماتیک ${item.category}؛ عکس مدل ${item.name} نیست`,
+      specs: item.specs,
+      variants: [
+        {
+          id: item.id + "-black",
+          color: "مشکی",
+          colorHex: "#252528",
+          storage: "مدل مرجع",
+          price: item.price,
+          stock: 6,
+        },
+      ],
+      featured: true,
+      offer: false,
+      seo: { title: item.name, description: description.slice(0, 250), image },
+    };
+  },
+);
+
+const baseProducts: Product[] = [
   ...phoneProducts,
+  ...expandedAccessories,
+  ...fittedAccessories,
+  ...brandedAccessories,
   ...accessorySeeds.map(
     ([id, name, category, price, illustration, specs], index): Product => {
       const image = `/products/${illustration}.svg`;
@@ -562,3 +707,47 @@ export const products: Product[] = [
     },
   ),
 ];
+
+// Both reference and blue prices are illustrative seed values; payable prices stay unchanged.
+export const products: Product[] = baseProducts.map((original) => {
+  const p = original.kind === "phone" ? enrichPhone(original) : original;
+  const refs = (media[p.id] || [])
+    .filter((r) => r.path)
+    .sort(
+      (a, b) =>
+        Number(a.path!.includes("-photo-")) -
+        Number(b.path!.includes("-photo-")),
+    );
+  const paths = refs.map((r) => r.path!);
+  // Keep the real reference photographs first; retain previous exact-model images as extra views.
+  const images = Array.from(
+    new Set([
+      ...paths,
+      ...p.images.filter((i) => !/placeholder|unavailable/.test(i)),
+    ]),
+  ).slice(0, 6);
+  const updated = {
+    ...p,
+    description: refs.length
+      ? p.description.replace(
+          "تصویر صرفاً شماتیک دسته محصول است؛ عکس این مدل نیست.",
+          "گالری شامل تصاویر مرجع همین مدل است؛ تصویرسازی شماتیک دسته نیز ممکن است در نماهای تکمیلی دیده شود.",
+        )
+      : p.description,
+    images: images.length ? images : p.images,
+    imageAlt: refs.length
+      ? `تصاویر مرجع مدل ${p.name}؛ ممکن است رنگ‌ها و تجهیزات همراه تصاویر متفاوت باشند`
+      : p.imageAlt,
+    seo: { ...p.seo, image: images[0] || p.images[0] },
+  };
+  return p.offer
+    ? {
+        ...updated,
+        variants: p.variants.map((v) => ({
+          ...v,
+          compareAtPrice:
+            v.compareAtPrice || Math.ceil(v.price / 0.93 / 1000) * 1000,
+        })),
+      }
+    : updated;
+});

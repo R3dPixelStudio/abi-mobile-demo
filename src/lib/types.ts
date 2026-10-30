@@ -5,15 +5,20 @@ export type Variant = {
   colorHex: string;
   storage: string;
   price: number;
+  compareAtPrice?: number;
   stock: number;
 };
 export type Product = {
+  referenceUrl?: string;
+  overview?: { title: string; text: string }[];
   id: string;
   slug: string;
   name: string;
   brand: string;
   kind: "phone" | "accessory";
   category: string;
+  compatiblePhoneIds?: string[];
+  compatibleBrands?: string[];
   description: string;
   images: string[];
   imageAlt: string;
@@ -49,6 +54,7 @@ export type OrderLine = CartLine & {
   image: string;
 };
 export type Order = {
+  bluePoints?: number;
   id: string;
   date: string;
   lines: OrderLine[];

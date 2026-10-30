@@ -16,5 +16,14 @@ export const defaultSettings: StoreSettings = {
   discountCode: "ABI10",
   discountPercent: 10,
   brands: ["Apple", "Samsung", "Xiaomi", "Honor", "Google"],
-  categories: ["گوشی موبایل", "شارژر", "کابل", "هدفون", "قاب", "پاوربانک"],
+  categories: [
+    "گوشی موبایل",
+    "ساعت هوشمند",
+    "شارژر",
+    "کابل",
+    "هدفون",
+    "قاب و محافظ",
+    "گلس و محافظ صفحه",
+    "پاوربانک",
+  ],
 };
